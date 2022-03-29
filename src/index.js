@@ -12,8 +12,19 @@ const publicDirectoryPath = path.join(__dirname, "../public")
 
 app.use(express.static(publicDirectoryPath))
 
-io.on('connection', ()=>{
+let count = 0
+
+
+// use io when wanting to send to every user --//-- use socket when wanting to send to the user that made the call 
+io.on('connection', (socket)=>{
     console.log('new websocket connection')
+
+    socket.emit('countUpdated', count)
+    socket.on('increment',()=>{
+        count++
+        io.emit("countUpdated", count);
+    })
+
 })
 
 server.listen(port, () => {
