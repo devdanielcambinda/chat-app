@@ -16,17 +16,16 @@ app.use(express.static(publicDirectoryPath))
 io.on('connection', (socket)=>{
     console.log('new websocket connection')
 
-    /* socket.emit('countUpdated', count)
-    socket.on('increment',()=>{
-        count++
-        io.emit("countUpdated", count);
-    }) */
     socket.emit('message', "Welcome!")
+    socket.broadcast.emit('message', "A new user has joined")
     socket.on('sendMessage', (message)=>{
       io.emit('message',message)
     })
-
+    socket.on('disconnect',()=>{
+      io.emit('message', 'User has left')
+    })
 })
+
 
 server.listen(port, () => {
   console.log(`Listening on port ${port}`);
