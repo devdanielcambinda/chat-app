@@ -2,6 +2,7 @@ const path = require("path")
 const http = require('http')
 const express = require("express")
 const socketio = require('socket.io') // or const { Server } = require("socket.io");
+const Filter = require('bad-words')
 
 const app = express()
 const server = http.createServer(app) //express creates this in the background but we cant access the server variable so we have to manually create it to pass it to socket.io
@@ -18,12 +19,21 @@ io.on('connection', (socket)=>{
 
     socket.emit('message', "Welcome!")
     socket.broadcast.emit('message', "A new user has joined")
-    socket.on('sendMessage', (message)=>{
+
+    socket.on('sendMessage', (message,acknowledgement)=>{
+      const filter =new Filter()
+
+      if(filter.isProfane(message)){
+        return acknowledgement('Profanity is not allowed!')
+      }
+
       io.emit('message',message)
+      acknowledgement()
     })
 
-    socket.on('sendLocation', ({longitude,latitude})=>{
+    socket.on('sendLocation', ({longitude,latitude},acknowledgement)=>{
       io.emit('message', `https://google.com/maps?q=${latitude},${longitude}`)
+      acknowledgement()
     })
 
     socket.on('disconnect',()=>{
