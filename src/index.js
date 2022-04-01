@@ -3,6 +3,7 @@ const http = require('http')
 const express = require("express")
 const socketio = require('socket.io') // or const { Server } = require("socket.io");
 const Filter = require('bad-words')
+const { generateMessage }=require('./utils/messages')
 
 const app = express()
 const server = http.createServer(app) //express creates this in the background but we cant access the server variable so we have to manually create it to pass it to socket.io
@@ -17,8 +18,8 @@ app.use(express.static(publicDirectoryPath))
 io.on('connection', (socket)=>{
     console.log('new websocket connection')
 
-    socket.emit('message', "Welcome!")
-    socket.broadcast.emit('message', "A new user has joined")
+    socket.emit('message', generateMessage('Welcome!'))
+    socket.broadcast.emit("message", generateMessage("A new user has joined"))
 
     socket.on('sendMessage', (message,acknowledgement)=>{
       const filter =new Filter()
@@ -27,17 +28,17 @@ io.on('connection', (socket)=>{
         return acknowledgement('Profanity is not allowed!')
       }
 
-      io.emit('message',message)
+      io.emit('message', generateMessage(message))
       acknowledgement()
     })
 
     socket.on('sendLocation', ({longitude,latitude},acknowledgement)=>{
-      io.emit('message', `https://google.com/maps?q=${latitude},${longitude}`)
+      io.emit('locationMessage', `https://google.com/maps?q=${latitude},${longitude}`)
       acknowledgement()
     })
 
     socket.on('disconnect',()=>{
-      io.emit('message', 'User has left')
+      io.emit('message', generateMessage('User has left'))
     })
 })
 
