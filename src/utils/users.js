@@ -2,6 +2,7 @@ const users = []
 
 const addUser = ({id,username,room}) =>{
     //clean the data
+    const originalUsername = username
     username = username.trim().toLowerCase()
     room = room.trim().toLowerCase()
 
@@ -26,7 +27,7 @@ const addUser = ({id,username,room}) =>{
     }
 
     //store user
-    const user = {id,username,room}
+    const user = {id,originalUsername,username,room}
     users.push(user)
     return {user}
 }

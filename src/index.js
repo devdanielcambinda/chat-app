@@ -4,6 +4,7 @@ const express = require("express")
 const socketio = require('socket.io') // or const { Server } = require("socket.io");
 const Filter = require('bad-words')
 const { generateMessage, generateLocationMessage }=require('./utils/messages')
+const {addUser, removeUser, getUser, getUsersInRoom} = require('./utils/users')
 
 const app = express()
 const server = http.createServer(app) //express creates this in the background but we cant access the server variable so we have to manually create it to pass it to socket.io
@@ -20,11 +21,20 @@ app.use(express.static(publicDirectoryPath))
 io.on('connection', (socket)=>{
     console.log('new websocket connection')
 
-    socket.on("join", ({username,room})=>{
-      socket.join(room)
+    socket.on("join", (options, acknowledgement)=>{
+
+      const {error, user} = addUser({id:socket.id, ...options})
+
+      if(error){
+        return acknowledgement(error)
+      }
+      
+      socket.join(user.room)
 
       socket.emit('message', generateMessage('Welcome!'))
-      socket.broadcast.to(room).emit("message", generateMessage(`${username} has joined`))
+      socket.broadcast.to(user.room).emit("message", generateMessage(`${user.originalUsername} has joined!`))
+
+      acknowledgement()
 
     })
 
@@ -45,7 +55,12 @@ io.on('connection', (socket)=>{
     })
 
     socket.on('disconnect',()=>{
-      io.emit('message', generateMessage('User has left'))
+      const user = removeUser(socket.id)
+
+      if(user){
+        io.to(user.room).emit("message", generateMessage(`${user.originalUsername} has left!`));
+      }
+
     })
 })
 
