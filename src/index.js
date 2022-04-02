@@ -18,8 +18,13 @@ app.use(express.static(publicDirectoryPath))
 io.on('connection', (socket)=>{
     console.log('new websocket connection')
 
-    socket.emit('message', generateMessage('Welcome!'))
-    socket.broadcast.emit("message", generateMessage("A new user has joined"))
+    socket.on("join", ({username,room})=>{
+      socket.join(room)
+
+      socket.emit('message', generateMessage('Welcome!'))
+      socket.broadcast.to(room).emit("message", generateMessage(`${username} has joined`))
+
+    })
 
     socket.on('sendMessage', (message,acknowledgement)=>{
       const filter =new Filter()
@@ -28,7 +33,7 @@ io.on('connection', (socket)=>{
         return acknowledgement('Profanity is not allowed!')
       }
 
-      io.emit('message', generateMessage(message))
+      io.to('wangwan').emit('message', generateMessage(message))
       acknowledgement()
     })
 
