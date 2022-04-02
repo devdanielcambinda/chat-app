@@ -33,6 +33,10 @@ io.on('connection', (socket)=>{
 
       socket.emit('message', generateMessage('SERVER','Welcome!'))
       socket.broadcast.to(user.room).emit("message", generateMessage('SERVER',`${user.originalUsername} has joined!`))
+      io.to(user.room).emit('roomData', {
+        room:user.room,
+        users: getUsersInRoom(user.room)
+      })
 
       acknowledgement()
 
@@ -58,7 +62,11 @@ io.on('connection', (socket)=>{
       const user = removeUser(socket.id)
 
       if(user){
-        io.to(user.room).emit("message", generateMessage('SERVER',`${user.originalUsername} has left!`));
+        io.to(user.room).emit("message", generateMessage('SERVER',`${user.originalUsername} has left!`))
+        io.to(user.room).emit('roomData', {
+          room:user.room,
+          users: getUsersInRoom(user.room)
+        })
       }
 
     })
