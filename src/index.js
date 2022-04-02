@@ -31,39 +31,38 @@ io.on('connection', (socket)=>{
       
       socket.join(user.room)
 
-      socket.emit('message', generateMessage('Welcome!'))
-      socket.broadcast.to(user.room).emit("message", generateMessage(`${user.originalUsername} has joined!`))
+      socket.emit('message', generateMessage('SERVER','Welcome!'))
+      socket.broadcast.to(user.room).emit("message", generateMessage('SERVER',`${user.originalUsername} has joined!`))
 
       acknowledgement()
 
     })
 
     socket.on('sendMessage', (message,acknowledgement)=>{
-      const filter =new Filter()
-
-      if(filter.isProfane(message)){
-        return acknowledgement('Profanity is not allowed!')
-      }
-
-      io.to('wangwan').emit('message', generateMessage(message))
+      
+      const user = getUser(socket.id)
+      io.to(user.room).emit('message', generateMessage(user.originalUsername,message))
       acknowledgement()
+
     })
 
     socket.on('sendLocation', ({longitude,latitude},acknowledgement)=>{
-      io.emit('locationMessage', generateLocationMessage(`https://google.com/maps?q=${latitude},${longitude}`))
+
+      const user = getUser(socket.id);
+      io.to(user.room).emit('locationMessage', generateLocationMessage(user.originalUsername,`https://google.com/maps?q=${latitude},${longitude}`))
       acknowledgement()
+
     })
 
     socket.on('disconnect',()=>{
       const user = removeUser(socket.id)
 
       if(user){
-        io.to(user.room).emit("message", generateMessage(`${user.originalUsername} has left!`));
+        io.to(user.room).emit("message", generateMessage('SERVER',`${user.originalUsername} has left!`));
       }
 
     })
 })
-
 
 server.listen(port, () => {
   console.log(`Listening on port ${port}`);

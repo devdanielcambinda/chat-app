@@ -1,12 +1,14 @@
 module.exports = {
-  generateMessage(text) {
+  generateMessage(username,text) {
     return {
+      username,
       text,
       createdAt: new Date().getTime(),
     };
   },
-  generateLocationMessage(url) {
+  generateLocationMessage(username,url) {
     return {
+      username,
       url,
       createdAt: new Date().getTime(),
     };
