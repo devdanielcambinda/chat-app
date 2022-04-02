@@ -15,6 +15,8 @@ const publicDirectoryPath = path.join(__dirname, "../public")
 app.use(express.static(publicDirectoryPath))
 
 // use io when wanting to send to every user --//-- use socket when wanting to send to the user that made the call 
+//socket.emit() io.emit() socket.broadcast.emit()
+// io.to().emit() socket.to().broadcast.emit()
 io.on('connection', (socket)=>{
     console.log('new websocket connection')
 
